@@ -9,7 +9,7 @@ def extract_documents(index_name, client):
     # Perform a match_all query and scroll through documents in the index
     query = {"query": {"match_all": {}}}
     response = client.search(index=index_name, body=query, scroll='2m', size=1000)
-    
+
     scroll_id = response['_scroll_id']
     total_docs = len(response['hits']['hits'])
 
@@ -20,11 +20,13 @@ def extract_documents(index_name, client):
     return total_docs
 
 def create_client(host, port, user_auth):
+    # Works for both managed FGAC service domains and self-managed domains
     return opensearchpy.OpenSearch(
         hosts = [{'host': host, 'port': port}],
-        use_ssl = True,
-        verify_certs = True,
         http_auth = user_auth,
+        use_ssl = True,
+        ssl_show_warn = False,
+        verify_certs = False,
         connection_class = opensearchpy.Urllib3HttpConnection
     )
 
@@ -37,6 +39,10 @@ if __name__ == "__main__":
     password = os.getenv('PASSWORD')
     user_auth = (username, password)
 
-    create_client(host, port, user_auth)
+    client = create_client(host, port, user_auth)
+
+    # Test cat indices
+    print(client.cat.indices())
+
 
 
