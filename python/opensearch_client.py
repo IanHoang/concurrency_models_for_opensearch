@@ -1,4 +1,5 @@
 import os
+import json
 
 import opensearchpy
 from requests_aws4auth import AWS4Auth
@@ -14,11 +15,25 @@ def extract_documents(index_name, client):
     scroll_id = response['_scroll_id']
     total_docs = len(response['hits']['hits'])
 
+    write_documents_to_file(index_name, response['hits']['hits'])
+
     while len(response['hits']['hits']):
         response = client.scroll(scroll_id=scroll_id, scroll='2m')
         total_docs += len(response['hits']['hits'])
+        write_documents_to_file(index_name, response['hits']['hits'])
 
-    return total_docs
+    print(f"Extracted {total_docs} documents from {index_name}")
+
+def write_documents_to_file(index_name, documents, directory="output"):
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+    
+    # Write documents to a file in batches
+    file_path = os.path.join(directory, f"{index_name}.json")
+    with open(file_path, 'a') as f:
+        for doc in documents:
+            json.dump(doc['_source'], f)  
+            f.write('\n')  
 
 def create_client(host, port, user_auth):
     # Works for both managed FGAC service domains and self-managed domains
@@ -30,7 +45,6 @@ def create_client(host, port, user_auth):
         verify_certs = False,
         connection_class = opensearchpy.Urllib3HttpConnection
     )
-
 
 if __name__ == "__main__":
     load_dotenv()
