@@ -32,9 +32,8 @@ if __name__ == "__main__":
     user_auth = (username, password)
 
     client = create_client(host, port, user_auth)
-    indices = ['A', 'B', 'C']
+    indices = ['movies-1000', 'movies-2000', 'weather-data-2016']
 
     run_threading(indices, client)
 
 
-    
