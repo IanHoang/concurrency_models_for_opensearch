@@ -5,6 +5,7 @@ from requests_aws4auth import AWS4Auth
 from dotenv import load_dotenv
 
 
+# Extract standard opensearch-py approach
 def extract_documents(index_name, client):
     # Perform a match_all query and scroll through documents in the index
     query = {"query": {"match_all": {}}}
